@@ -36,9 +36,7 @@
 
   "browser_action": {
     "default_icon": "icons/logo.png",
-    "default_title": "Demo",
+    "default_title": "Issuer",
     "default_popup": "popup/connetti.html"
-    //"default_popup": "popup/invitation.html"
-
   }
 }
