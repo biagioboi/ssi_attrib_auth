@@ -31,7 +31,8 @@ public class ConsumeWebService {
 
     private String vonNetwork = "http://localhost:9000";
     private String aliceagent = "http://localhost:11000";
-    private String bobAgent = "http://localhost:11001";
+    //private String holderAgent = "http://localhost:11002";
+    private String holderAgent = "";
 
 
     @PostMapping("/init")
@@ -85,9 +86,11 @@ public class ConsumeWebService {
     }
 
     @RequestMapping("/invitation")
-    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public InvitationDetails invitationTango() throws InterruptedException {
+    public InvitationDetails invitationTango(@RequestBody Addr addr) throws InterruptedException {
+        System.out.println(holderAgent="http://"+addr.getAddr());
+
         ArrayList<String> handshakeProtocols = new ArrayList<>();
         handshakeProtocols.add("did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/didexchange/1.0");
         InvitationRequest req = new InvitationRequest(handshakeProtocols, false);
@@ -107,7 +110,7 @@ public class ConsumeWebService {
         DecodedInvitation decodedInvitation = g.fromJson(decodedInvitationString, DecodedInvitation.class);
         System.out.println(decodedInvitation);
         ResponseEntity<InvitationDetails> responseEntity1 = restTemplate.
-                postForEntity(bobAgent
+                postForEntity(holderAgent
                         + "/out-of-band/receive-invitation", decodedInvitation, InvitationDetails.class);
 
         System.out.println(responseEntity1.getBody());
@@ -115,7 +118,7 @@ public class ConsumeWebService {
 
         String connBobId = responseEntity1.getBody().getConnection_id();
         ResponseEntity<InvitationDetails> responseEntity2 = restTemplate
-                .postForEntity(bobAgent
+                .postForEntity(holderAgent
                         + "/didexchange/" + connBobId + "/accept-invitation", null, InvitationDetails.class);
 
         System.out.println(responseEntity2);
@@ -177,21 +180,42 @@ public class ConsumeWebService {
 
     @PostMapping("/issueCredential")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CredeExRecord> issueCredential(@RequestBody ProposalRequest propReq) throws InterruptedException {
+    public ResponseEntity<CredeExRecord> issueCredential(@RequestBody IssueRequest issueReq) throws InterruptedException {
+        holderAgent="http://"+issueReq.getAddr();
+        System.out.println(holderAgent);
+
+        ProposalRequest propReq = issueReq.getProposalRequest();
 
         //Bob richiede ad alice le credenziali
         long time = 500;
         TimeUnit timeUnit = TimeUnit.MILLISECONDS;
+
+
+
 //        timeUnit.sleep(time);
-        String connId = getConnectionId(bobAgent);
+        String connId = getConnectionId(holderAgent);
         propReq.setConnection_id(connId);
         propReq.getCredential_preview().setType("issue-credential/2.0/credential-preview");
-        String password = propReq.getCredential_preview().getAttributes().get(1).getValue();
+
+        System.out.println(propReq);
+
+        String password = "";
+        for(AttributeRequest a : propReq.getCredential_preview().getAttributes()){
+            if (a.getName().equals("password")){
+                password = a.getValue();
+            }
+        }
+        //String password = propReq.getCredential_preview().getAttributes().get(1).getValue();
         //cript
         String passwordHashed = bcryptEncoder.encode(password);
-        propReq.getCredential_preview().getAttributes().get(1).setValue(passwordHashed);
+        //propReq.getCredential_preview().getAttributes().get(2).setValue(passwordHashed);
+        for(AttributeRequest a : propReq.getCredential_preview().getAttributes()){
+            if (a.getName().equals("password")){
+                a.setValue(passwordHashed);
+            }
+        }
 //        timeUnit.sleep(time);
-        ProposalResponse propResp = restTemplate.postForEntity(bobAgent
+        ProposalResponse propResp = restTemplate.postForEntity(holderAgent
                         + "/issue-credential-2.0/send-proposal", propReq, ProposalResponse.class)
                 .getBody();
         System.out.println(propReq);
@@ -209,7 +233,7 @@ public class ConsumeWebService {
 
         timeUnit.sleep(time);
         //Bob richiede le credenziali
-        System.out.println(restTemplate.postForEntity(bobAgent
+        System.out.println(restTemplate.postForEntity(holderAgent
                 + "/issue-credential-2.0/records/" + bobCredExId + "/send-request", null, CredeExRecord.class));
 
         timeUnit.sleep(time);
@@ -224,7 +248,7 @@ public class ConsumeWebService {
         //Bob conserva le credenziali
 //        System.out.println(restTemplate.postForEntity(bobAgent
 //                + "/issue-credential-2.0/records/" + bobCredExId + "/store", null, CredeExRecord.class));
-        return restTemplate.postForEntity(bobAgent
+        return restTemplate.postForEntity(holderAgent
                 + "/issue-credential-2.0/records/" + bobCredExId + "/store", null, CredeExRecord.class);
     }
 
@@ -232,7 +256,7 @@ public class ConsumeWebService {
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Credential funzione() {
-        Credential credential = restTemplate.getForEntity(bobAgent + "/credentials", CredentialList.class)
+        Credential credential = restTemplate.getForEntity(holderAgent + "/credentials", CredentialList.class)
                 .getBody()
                 .getResults()
                 .get(0);
