@@ -31,4 +31,12 @@ async function getAddr(){
 }
 
 form.addEventListener("click", submitForm);
-getAddr();
+
+browser.storage.local.get("ssi").then((value)=>{
+
+	if(value.ssi === "ssi"){
+		window.location.href = 'ssi.html';
+	}else{
+		getAddr();
+	}
+});

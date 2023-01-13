@@ -43,11 +43,5 @@ browser.storage.local.get("connetti").then((value)=>{
 		window.location.href = 'invitation.html';
 	}});
 	
-browser.storage.local.get("ssi").then((value)=>{
-
-	if(value.ssi === "ssi"){
-		window.location.href = 'ssi.html';
-		
-	}});
 		
 form.addEventListener("click", getConnection);

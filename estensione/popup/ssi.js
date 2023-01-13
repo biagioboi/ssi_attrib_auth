@@ -1,4 +1,4 @@
-var form = document.getElementById("formSubmit");
+var form = document.getElementById("submit");
 var jwt = "";
 function setItem() {
 console.log("OK");
