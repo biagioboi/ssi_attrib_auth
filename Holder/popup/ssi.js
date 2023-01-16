@@ -30,6 +30,8 @@ var requestOptions = {
   redirect: 'follow'
 };
 
+console.log(requestOptions);
+
 fetch("http://localhost:8080/authenticate", requestOptions)
   .then(response => 
   	response.json()
@@ -49,7 +51,7 @@ fetch("http://localhost:8080/authenticate", requestOptions)
 
 }
 
-function getCredential(){
+async function getCredential(){
 
 var requestOptions = {
   method: 'GET',
@@ -61,7 +63,9 @@ var cred = {
 		password: ""
 };
 
-fetch("http://localhost:11001/credentials", requestOptions)
+var addr = await browser.storage.local.get("addr");
+
+fetch("http://"+addr.addr+"/credentials", requestOptions)
   .then(response => response.json())
   .then(result => {	
   			/*
