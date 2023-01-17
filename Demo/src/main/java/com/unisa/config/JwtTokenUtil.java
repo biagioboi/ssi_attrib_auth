@@ -43,6 +43,10 @@ public class JwtTokenUtil implements Serializable {
 		return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody();
 	}
 
+	public String getAddrFromToken(String token){
+		return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).getBody().get("addr").toString();
+	}
+
 	private Boolean isTokenExpired(String token) {
 		final Date expiration = getExpirationDateFromToken(token);
 		return expiration.before(new Date());
@@ -53,22 +57,21 @@ public class JwtTokenUtil implements Serializable {
 		return false;
 	}
 
-	public String generateToken(UserDetails userDetails) {
+	public String generateToken(UserDetails userDetails,String addr) {
 		Map<String, Object> claims = new HashMap<>();
-		return doGenerateToken(claims, userDetails);
+		return doGenerateToken(claims, userDetails, addr);
 	}
 
-	private String doGenerateToken(Map<String, Object> claims, UserDetails userDetails) {
+	private String doGenerateToken(Map<String, Object> claims, UserDetails userDetails,String addr) {
 		String ruoli = userDetails.getAuthorities().toString();
 
 		//ruoli = ruoli.replace("[","").replace("]","");
-
-
 
 		return Jwts.builder()
 				.setClaims(claims)
 				.setSubject(userDetails.getUsername())
 				.claim("roles",ruoli)
+				.claim("addr",addr)
 				.setIssuedAt(new Date(System.currentTimeMillis()))
 				.setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY*1000)).signWith(SignatureAlgorithm.HS512, secret).compact();
 	}

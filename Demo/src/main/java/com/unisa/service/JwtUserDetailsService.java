@@ -23,10 +23,10 @@ public class JwtUserDetailsService implements UserDetailsService {
 	private RestTemplate restTemplate;
 	@Autowired
 	private PasswordEncoder bcryptEncoder;
-	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-		Credential credential = restTemplate.getForEntity("http://localhost:11001/credentials", CredentialList.class)
+	public UserDetails loadUserByUsername(String username,String addr) throws UsernameNotFoundException {
+
+		Credential credential = restTemplate.getForEntity("http://"+addr+"/credentials", CredentialList.class)
 				.getBody()
 				.getResults()
 				.get(0);
@@ -44,4 +44,8 @@ public class JwtUserDetailsService implements UserDetailsService {
 		}
 	}
 
+	@Override
+	public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+		return null;
+	}
 }
