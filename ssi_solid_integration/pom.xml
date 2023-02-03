@@ -12,7 +12,7 @@
 	<artifactId>spring-boot-jwt</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>spring-boot-jwt</name>
-	<description>Demo project for Spring Security with JWT</description>
+		<description>Integration of SSI in Solid Decentrailization</description>
 
 	<properties>
 		<java.version>1.8</java.version>

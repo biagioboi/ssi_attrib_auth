@@ -1,47 +1,43 @@
-## Avviare il web server sulla tua local machine
+# SSI Integration for Solid Decentralization authentication
+## Start Web Server on local machine
+It's possible to install the Von Network for Hyperledger Aries using Docker
+container or directly on local machine.
+### Steps to follow to install Hyperledger Aries on Local Machine
+1. Install Python and PIP manager -> https://www.python.org/downloads/
+2. Clone the VON Network and navigate inside the directory.
+    
+    ```
+    git clone https://github.com/bcgov/von-network.git
+    cd von-network
+    ```
 
-1. Installa python and pip
+3. Configure a virtual environment.
+    ```
+    virtualenv --python=python3.6 venv
+    source venv/bin/activate
+    ```
+4. Install Python requirements.
+    ```
+    pip install -r server/requirements.txt
+    ```
 
-2. Download questa repository:
+### Steps to follow to install Hyperledger Aries using Docker container
+1. Execute Docker build
+    ```
+    ./manage build
+    ```
 
-bash
-git clone https://github.com/bcgov/von-network.git
-cd von-network
+2. Start VON Network
+    ```
+    ./manage start --logs
+    ```
 
-
-3. Se utilizzi virtualenv, configura un ambiente virtuale e attivalo:
-
-bash
-virtualenv --python=python3.6 venv
-source venv/bin/activate
-
-
-4. Installa:
-
-bash
-pip install -r server/requirements.txt
-
-
-5. Effettuare il build del doker container
-bash
-./manage build
-
-
-6. Avviare la Von-Network
-bash
-./manage start --logs
-
-
-### Per stoppare la Von-Network
-bash
-./manage stop
-
-
-### Per stoppare e pulire il ledger
-bash
-./manage down
+#### Once completed
+To stop the Docker container ```./manage stop```, to clean the ledger ```./manage down```
 
 # ACA-py
+In order to test communicate with Docker container and create instances 
+
 
 Se si vuole eseguire ACA-py in locale eseguire
 bash
