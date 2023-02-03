@@ -36,7 +36,45 @@ container or directly on local machine.
 To stop the Docker container ```./manage stop```, to clean the ledger ```./manage down```
 
 # ACA-py
-In order to test communicate with Docker container and create instances 
+In order to test communication with Indy Ledger inside 
+the Docker container and create instances we will use a Python 
+script able to create a communication with the Ledger.
+
+First of all it's important to remember that Indy Ledger 
+is Permissioned ledger, so not everyone can create new DIDs.
+Only Trust Anchors or Trustees can do this. So, if you want to add
+a new DID (NYM transaction), you need to do it being a Trust Anchor 
+or Trustee.
+
+Indy Ledger Platform offers the possibility to authenticate a new DID
+using web interface:
+
+<img src="./screen/newdid_registration.png"/>
+
+
+(that is if you want to add a new DID `82AennuN2hgnDYihB8CgDJ `, you need to use another Trust Anchor's DID which must be already written to the Ledger, and `identifier` must be this Trust Anchor's DID).
+Once a DID is added to the Ledger, only the owner (that is `82AennuN2hgnDYihB8CgDJ `) can modify it (for example rotate keys). The Trust Anchor that created this DID can not modify it anymore. This is one of the principles of Self Sovereign Identity (SSI).
+
+For your tests, I suggest to use one of the Trustee's DID from genesis transactions to create new DIDs.
+
+So, we create a new "Entity" Alice, able to create net Verifiable Credentials, to do so we need to register a Seed using the interface of Hyperledger Aries and then execute the command.
+
+```
+docker run -p 8000:8000 -p 11000:11000 bcgovimages/aries-cloudagent:py36-1.16-0_0.6.0 start \
+--label Alice \
+-it http 0.0.0.0 8000 \
+-ot http --admin 0.0.0.0 11000 \
+--admin-insecure-mode \
+--genesis-url http://host.docker.internal:9000/genesis \
+--seed Alice000000000000000000076744495 \
+--endpoint http://host.docker.internal:8000/ \
+--debug-connections \
+--auto-provision \
+--wallet-type indy \
+--wallet-name Alice1 \
+--wallet-key secret
+```
+Once we defined the Issuer, we define the Holder, which request to the Issuer to issue new verifiable credentials.
 
 
 Se si vuole eseguire ACA-py in locale eseguire
