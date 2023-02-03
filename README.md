@@ -51,13 +51,13 @@ using web interface:
 
 <img src="./screen/newdid_registration.png" alt="New DID Registration" style="width: 50%"/>
 
+In our case, we proceed to register the seed `Alice000000000000000000076744495`
 
-(that is if you want to add a new DID `82AennuN2hgnDYihB8CgDJ `, you need to use another Trust Anchor's DID which must be already written to the Ledger, and `identifier` must be this Trust Anchor's DID).
-Once a DID is added to the Ledger, only the owner (that is `82AennuN2hgnDYihB8CgDJ `) can modify it (for example rotate keys). The Trust Anchor that created this DID can not modify it anymore. This is one of the principles of Self Sovereign Identity (SSI).
+Once a DID is added to the Ledger, only the owner can modify it (for example rotate keys). 
+The Trust Anchor that created this DID can not modify it anymore. 
+This is one of the principles of Self Sovereign Identity (SSI).
 
-For your tests, I suggest to use one of the Trustee's DID from genesis transactions to create new DIDs.
-
-So, we create a new "Entity" Alice, able to create net Verifiable Credentials, to do so we need to register a Seed using the interface of Hyperledger Aries and then execute the command.
+So, we create a new "Entity" Alice, able to create new Verifiable Credentials, to do so after we registered a Seed using the interface of Hyperledger Aries; it's possible to execute the command.
 
 ```
 docker run -p 8000:8000 -p 11000:11000 bcgovimages/aries-cloudagent:py36-1.16-0_0.6.0 start \
@@ -74,34 +74,34 @@ docker run -p 8000:8000 -p 11000:11000 bcgovimages/aries-cloudagent:py36-1.16-0_
 --wallet-name Alice1 \
 --wallet-key secret
 ```
-Once we defined the Issuer, we define the Holder, which request to the Issuer to issue new verifiable credentials.
 
+This will be our Issuer, namely Alice, able to emit VC for all the requesting Holder.
+Let's do a request for new VC from the new user Bob.
 
-Se si vuole eseguire ACA-py in locale eseguire
-bash
-pip3 install aries-cloudagent
+First of all, we need to declare a new user, which will be able to connect to the Ledger.
 
+```
+docker run -p 8001:8001 -p 11001:11001 bcgovimages/aries-cloudagent:py36-1.16-0_0.6.0 start \
+--label Bob \
+-it http 0.0.0.0 8001 \
+-ot http --admin 0.0.0.0 11001 \
+--admin-insecure-mode \
+--genesis-url http://host.docker.internal:9000/genesis \
+--endpoint http://host.docker.internal:8001/ \
+--debug-connections \
+--auto-provision \
+--wallet-local-did \
+--wallet-type indy \
+--wallet-name Bob1 \
+--wallet-key secret
+```
 
-è necessario il pakage libindy scaricabile su Ubuntu 18.04 usando i seguenti comandi :
-bash
-$ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 68DB5E88
+Notice that in this case, we do not defined the seed because we do not need to attach to any existing DID,
+but, instead, we will ask to Alice to issue new VC.
+Short recap: only Authorities need to attach them to new DID, since they need to be authorized.
 
-
-bash
-$ sudo add-apt-repository "deb https://repo.sovrin.org/sdk/deb bionic master"
-
-
-bash
-$ sudo apt-get update
-
-
-bash
-$ sudo apt-get install -y libindy
-
-
-# Docker
-Se non si vuole installarlo in locale è possibile utilizzare un doker container. L'immagine è possibile scaricarla al seguente link:
-https://hub.docker.com/r/bcgovimages/aries-cloudagent
+It's possible to execute ACA-Py directly on local machine, but we discourage this approach.
+More information are available https://github.com/hyperledger/aries-cloudagent-python
 
 ## Installazione estensione Firefox
 1. Scaricare questa repo come Zip file
