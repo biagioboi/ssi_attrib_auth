@@ -49,7 +49,7 @@ or Trustee.
 Indy Ledger Platform offers the possibility to authenticate a new DID
 using web interface:
 
-<img src="./screen/newdid_registration.png"/>
+<img src="./screen/newdid_registration.png" alt="New DID Registration" style="width: 50%"/>
 
 
 (that is if you want to add a new DID `82AennuN2hgnDYihB8CgDJ `, you need to use another Trust Anchor's DID which must be already written to the Ledger, and `identifier` must be this Trust Anchor's DID).
