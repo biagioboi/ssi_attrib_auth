@@ -158,7 +158,7 @@ public class ConsumeWebService {
         CredentialDefinitionResonse CredentialDefinitionResonse = restTemplate.postForEntity(aliceagent
                         + "/credential-definitions", credReq, CredentialDefinitionResonse.class)
                 .getBody();
-
+        System.out.println(req);
         return CredentialDefinitionResonse;
     }
 
