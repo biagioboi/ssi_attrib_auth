@@ -7,7 +7,7 @@ async function setItem() {
   if(schema.schema === undefined){
   	window.location.href = 'schema.html';
   }else{
-  	window.location.href = 'newInvitation.html';
+  	window.location.href = 'issueCredential.html';
   }
  	
 }
@@ -17,7 +17,6 @@ function onError(error) {
 }
 
 function getInvitation(){
-
 	var input = document.getElementById("form");
 
 
@@ -40,6 +39,7 @@ function getInvitation(){
 	fetch("http://localhost:8080/invitation", requestOptions)
   .then(response => {
   	response.json();
+	  console.log(response);
   	if(!response.ok){
   		throw `error with status ${response.status}`;
     }

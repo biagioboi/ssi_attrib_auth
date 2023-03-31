@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.unisa.connection.*;
 import com.unisa.issue.*;
 import com.unisa.schema.*;
+import com.unisa.schema.CreatedSchemaResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,46 +30,11 @@ public class ConsumeWebService {
     @Autowired
     private PasswordEncoder bcryptEncoder;
 
-    private String vonNetwork = "http://localhost:9000";
-    private String aliceagent = "http://localhost:11000";
-    //private String holderAgent = "http://localhost:11002";
-    private String holderAgent = "";
+    private String serverAgent = "http://localhost:11000";
+
+    private String userAgent;
 
 
-    @PostMapping("/init")
-    @ResponseStatus(HttpStatus.OK)
-    public DidResponse registerDid() throws InterruptedException {
-        Random r = new Random();
-        String seed = "seed0000000000000000000";
-
-        int max = 99999999;
-        int min = 10000000;
-
-        int randomValue = r.nextInt((max - min) + 1) + min;
-
-        seed = seed + randomValue;
-
-        DidRequest req = new DidRequest(seed, "TRUST_ANCHOR", null);
-        ResponseEntity<DidResponse> responseEntity = restTemplate.postForEntity(vonNetwork
-                + "/register", req, DidResponse.class);
-        System.out.println(responseEntity);
-//        Process p = null;
-//        try {
-//            p = Runtime.getRuntime().exec(new String[]{"/bin/sh", "-c", "/home/marco/Project/spring-boot-jwt-master/command.sh " + seed});
-//
-//            BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-//            String line = null;
-//            while ((line = reader.readLine()) != null) {
-//                System.out.println(line);
-//            }
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-////        p.wait();
-
-        return responseEntity.getBody();
-
-    }
 
     public String getConnectionId(String url) {
         ConnectionsResponse connectionsResponse = restTemplate
@@ -89,16 +55,15 @@ public class ConsumeWebService {
     @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public InvitationDetails invitationTango(@RequestBody Addr addr) throws InterruptedException {
-        System.out.println(holderAgent="http://"+addr.getAddr());
+        userAgent="http://"+addr.getAddr();
+
 
         ArrayList<String> handshakeProtocols = new ArrayList<>();
         handshakeProtocols.add("did:sov:BzCbsNYhMrjHiqZDTUASHg;spec/didexchange/1.0");
         InvitationRequest req = new InvitationRequest(handshakeProtocols, false);
         ResponseEntity<InvitationResponse> responseEntity = restTemplate.
-                postForEntity(aliceagent
+                postForEntity(serverAgent
                         + "/out-of-band/create-invitation", req, InvitationResponse.class);
-
-        System.out.println(responseEntity.getBody());
 
         String url = responseEntity
                 .getBody()
@@ -110,56 +75,79 @@ public class ConsumeWebService {
         DecodedInvitation decodedInvitation = g.fromJson(decodedInvitationString, DecodedInvitation.class);
         System.out.println(decodedInvitation);
         ResponseEntity<InvitationDetails> responseEntity1 = restTemplate.
-                postForEntity(holderAgent
+                postForEntity(userAgent
                         + "/out-of-band/receive-invitation", decodedInvitation, InvitationDetails.class);
 
-        System.out.println(responseEntity1.getBody());
 
+        return responseEntity1.getBody();
 
+        /* Removed since it's been enabled the auto-connection, no need to exchange the did manually, it's done in automatic flavor */
+        /*
         String connBobId = responseEntity1.getBody().getConnection_id();
         ResponseEntity<InvitationDetails> responseEntity2 = restTemplate
-                .postForEntity(holderAgent
+                .postForEntity(userAgent
                         + "/didexchange/" + connBobId + "/accept-invitation", null, InvitationDetails.class);
 
-        System.out.println(responseEntity2);
 
-        //Alice connId lo recupera effettuando una query a /credential
-
-        String connAliceId = getConnectionId(aliceagent);
-        System.out.println("Alice id " + connAliceId);
+        String connAliceId = getConnectionId(serverAgent);
 
         long time = 100;
         TimeUnit timeUnit = TimeUnit.MILLISECONDS;
         timeUnit.sleep(time);
 
-        //Alice accetta la connesione è conclude la "danza"
-        ResponseEntity<InvitationDetails> responseEntity3 = restTemplate.postForEntity(aliceagent
+        // Alice accept the connection and close the dance
+        ResponseEntity<InvitationDetails> responseEntity3 = restTemplate.postForEntity(serverAgent
                 + "/didexchange/" + connAliceId + "/accept-request", null, InvitationDetails.class);
-
-        return responseEntity3.getBody();
+        return responseEntity3.getBody();*/
 
     }
 
 
+    /** This end-point is needed for the schema creation, needed only when new schema is needed, maybe we can pass the
+     * value of schema name and schema version from the Issuer plugin */
     @PostMapping("/createSchema")
     @ResponseStatus(HttpStatus.OK)
     public CredentialDefinitionResonse createSchema(@RequestBody SchemaRequest schemaReq) {
         ArrayList<String> attributi = schemaReq.getAttributes();
 
 
-        SchemaRequest req = new SchemaRequest(attributi, "my-schema", "1.0");
-        ResponseEntity<SchemaResponse> responseEntity = restTemplate.postForEntity(aliceagent
+        SchemaRequest req = new SchemaRequest(attributi, "my-schema", "4.0");
+        ResponseEntity<SchemaResponse> responseEntity = restTemplate.postForEntity(serverAgent
                 + "/schemas", req, SchemaResponse.class);
 
         String schemaId = responseEntity.getBody().getSchema_id();
 
+        System.out.println(schemaId);
+
         CredentialDefinitionRequest credReq = new CredentialDefinitionRequest(schemaId, "default");
 
-        CredentialDefinitionResonse CredentialDefinitionResonse = restTemplate.postForEntity(aliceagent
+        CredentialDefinitionResonse CredentialDefinitionResonse = restTemplate.postForEntity(serverAgent
                         + "/credential-definitions", credReq, CredentialDefinitionResonse.class)
                 .getBody();
         System.out.println(req);
         return CredentialDefinitionResonse;
+    }
+
+    @RequestMapping("/schemas/usable")
+    @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    public CreatedSchemaResponse usableSchema() {
+
+        CreatedSchemaResponse created_schema_response = restTemplate.getForEntity(serverAgent
+                        + "/schemas/created", CreatedSchemaResponse.class)
+                .getBody();
+
+        return created_schema_response;
+    }
+    @PostMapping("/schema/attributesOfSchema")
+    @ResponseStatus(HttpStatus.OK)
+    public SchemaResponseForAttributes usableSchemaWithAttributes(@RequestBody SchemaRequestForAttributes req_schema_id) {
+        String schema_id = req_schema_id.getSchema_id();
+        SchemaResponseForAttributes created_schema_response = restTemplate.getForEntity(serverAgent
+                        + "/schemas/" + schema_id, SchemaResponseForAttributes.class)
+                .getBody();
+
+       return created_schema_response;
     }
 
     public String getCredExId(String url) {
@@ -178,11 +166,16 @@ public class ConsumeWebService {
 
     }
 
+
     @PostMapping("/issueCredential")
     @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<CredeExRecord> issueCredential(@RequestBody IssueRequest issueReq) throws InterruptedException {
-        holderAgent="http://"+issueReq.getAddr();
-        System.out.println(holderAgent);
+
+        /** Approach based on manual releasing of credentials, changed with automated flow **/
+        /*
+        userAgent="http://"+issueReq.getAddr();
+        System.out.println(userAgent);
+
 
         ProposalRequest propReq = issueReq.getProposalRequest();
 
@@ -192,8 +185,8 @@ public class ConsumeWebService {
 
 
 
-//        timeUnit.sleep(time);
-        String connId = getConnectionId(holderAgent);
+        //timeUnit.sleep(time);
+        String connId = getConnectionId(userAgent);
         propReq.setConnection_id(connId);
         propReq.getCredential_preview().setType("issue-credential/2.0/credential-preview");
 
@@ -215,7 +208,7 @@ public class ConsumeWebService {
             }
         }
 //        timeUnit.sleep(time);
-        ProposalResponse propResp = restTemplate.postForEntity(holderAgent
+        ProposalResponse propResp = restTemplate.postForEntity(userAgent
                         + "/issue-credential-2.0/send-proposal", propReq, ProposalResponse.class)
                 .getBody();
         System.out.println(propReq);
@@ -223,24 +216,24 @@ public class ConsumeWebService {
 
         String bobCredExId = propResp.getCred_ex_id();
         timeUnit.sleep(time);
-        String aliceCredExId = getCredExId(aliceagent);
+        String aliceCredExId = getCredExId(serverAgent);
         System.out.println("aliceCredExId " + aliceCredExId);
 
         //Alice risponde con un offer
-        restTemplate.postForEntity(aliceagent
+        restTemplate.postForEntity(serverAgent
                 + "/issue-credential-2.0/records/" + aliceCredExId + "/send-offer", null, CredeExRecord.class);
 
 
         timeUnit.sleep(time);
         //Bob richiede le credenziali
-        System.out.println(restTemplate.postForEntity(holderAgent
+        System.out.println(restTemplate.postForEntity(userAgent
                 + "/issue-credential-2.0/records/" + bobCredExId + "/send-request", null, CredeExRecord.class));
 
         timeUnit.sleep(time);
         ProposalRequest request = new ProposalRequest();
         request.setComment("Prova");
         //Alice rilascia le credenziali
-        System.out.println(restTemplate.postForEntity(aliceagent
+        System.out.println(restTemplate.postForEntity(serverAgent
                 + "/issue-credential-2.0/records/" + aliceCredExId + "/issue", request, CredeExRecord.class));
 
 
@@ -248,15 +241,24 @@ public class ConsumeWebService {
         //Bob conserva le credenziali
 //        System.out.println(restTemplate.postForEntity(bobAgent
 //                + "/issue-credential-2.0/records/" + bobCredExId + "/store", null, CredeExRecord.class));
-        return restTemplate.postForEntity(holderAgent
-                + "/issue-credential-2.0/records/" + bobCredExId + "/store", null, CredeExRecord.class);
+        return restTemplate.postForEntity(userAgent
+                + "/issue-credential-2.0/records/" + bobCredExId + "/store", null, CredeExRecord.class);*/
+
+        ProposalRequest propReq = issueReq.getProposalRequest();
+
+        String connId = getConnectionId(userAgent);
+        propReq.setConnection_id(connId);
+        propReq.getCredential_preview().setType("issue-credential/2.0/credential-preview");
+
+        System.out.println(propReq);
+        return;
     }
 
     @RequestMapping("/retCredential")
     @GetMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
     public Credential funzione() {
-        Credential credential = restTemplate.getForEntity(holderAgent + "/credentials", CredentialList.class)
+        Credential credential = restTemplate.getForEntity(userAgent + "/credentials", CredentialList.class)
                 .getBody()
                 .getResults()
                 .get(0);

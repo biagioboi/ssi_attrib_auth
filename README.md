@@ -1,5 +1,24 @@
-# SSI Integration for Solid Decentralization authentication
-## Start Web Server on local machine
+# Self-Sorveign Identity (SSI) attribute based authentication
+
+This repo contains the implementation of a SSI-compliant web server.
+It defines the end-point necessary to interact with Aca-Py agent.
+
+Structure of the repo
+```
+    - Holder (Contains the Firefox extension that must be run by who wants to access to the SSI-compliant web server)
+    - Issuer (Contains the Firefox extension that must be run by who wants to issue credentials for the access to the defined SSI-compliant web server)
+    - ssi_solid_integration (Contains the code for the SSI-compliant web server)
+```
+The current work aims at show the basic interaction without any check on connection, in future development checks on security of extensions must be done.
+Moreover, it's possible that future development may move the role of agents (which is currently based on Firefox extensions) to mobile devices (in case of Holder) or directly within the server (in case of Issuer).
+
+As described in doc, the technology behind the SSI is the Hyperledger Aries, which is based on Hyperledger Indy. A valid solution for Indy is the <a href="https://github.com/bcgov/von-network">VON Network</a>, which is a portable development Indy Node network, offering an environment which contains a web-based interface containing the nodes and the public ledger; moreover it allows a user to see the status of the nodes of a network and browse/search/filter the Ledger Transactions.
+Details on how to run this network can be found below.
+
+A valid implementation, instead, for Hyperledger Aries, which communicate with the VON Network is implemented in Python, namely <a href="https://github.com/hyperledger/aries-cloudagent-python">Aca-Py</a>. In assumed that the agents run on the user machine and on the server machine reps.; SSI-compliant server is responsible for the communication with such agents and extensions using the parameters passed through the extension.
+## Von Network
+
+
 It's possible to install the Von Network for Hyperledger Aries using Docker
 container or directly on local machine.
 ### Steps to follow to install Hyperledger Aries on Local Machine
@@ -60,11 +79,13 @@ This is one of the principles of Self Sovereign Identity (SSI).
 So, we create a new "Entity" Alice, able to create new Verifiable Credentials, to do so after we registered a Seed using the interface of Hyperledger Aries; it's possible to execute the command.
 
 ```
-docker run -p 8000:8000 -p 11000:11000 bcgovimages/aries-cloudagent:py36-1.16-0_0.6.0 start \
+docker run -p 8000:8000 -p 11000:11000 bcgovimages/aries-cloudagent:py36-1.16-1_0.8.0 start \
 --label Alice \
 -it http 0.0.0.0 8000 \
 -ot http --admin 0.0.0.0 11000 \
 --admin-insecure-mode \
+--auto-accept-invites \
+--auto-accept-requests \
 --genesis-url http://host.docker.internal:9000/genesis \
 --seed Alice000000000000000000076744495 \
 --endpoint http://host.docker.internal:8000/ \
@@ -81,11 +102,13 @@ Let's do a request for new VC from the new user Bob.
 First of all, we need to declare a new user, which will be able to connect to the Ledger.
 
 ```
-docker run -p 8001:8001 -p 11001:11001 bcgovimages/aries-cloudagent:py36-1.16-0_0.6.0 start \
+docker run -p 8001:8001 -p 11001:11001 bcgovimages/aries-cloudagent:py36-1.16-1_0.8.0 start \
 --label Bob \
 -it http 0.0.0.0 8001 \
 -ot http --admin 0.0.0.0 11001 \
 --admin-insecure-mode \
+--auto-accept-invites \
+--auto-accept-requests \
 --genesis-url http://host.docker.internal:9000/genesis \
 --endpoint http://host.docker.internal:8001/ \
 --debug-connections \

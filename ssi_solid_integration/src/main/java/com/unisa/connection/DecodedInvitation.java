@@ -19,7 +19,7 @@ public class DecodedInvitation {
     @JsonProperty
     private String label;
     @JsonProperty
-    private ArrayList<Service> service;
+    private ArrayList<Service> services;
 
 
     public DecodedInvitation(String type, String id, ArrayList<String> handshake_protocols, String label, ArrayList<Service> service) {
@@ -27,7 +27,7 @@ public class DecodedInvitation {
         this.id = id;
         this.handshake_protocols = handshake_protocols;
         this.label = label;
-        this.service = service;
+        this.services = service;
 
     }
     public DecodedInvitation(){}
@@ -65,11 +65,11 @@ public class DecodedInvitation {
     }
 
     public ArrayList<Service> getService() {
-        return service;
+        return services;
     }
 
     public void setService(ArrayList<Service> service) {
-        this.service = service;
+        this.services = service;
     }
 
 
@@ -80,7 +80,7 @@ public class DecodedInvitation {
                 ", id='" + id + '\'' +
                 ", handshake_protocols=" + handshake_protocols +
                 ", label='" + label + '\'' +
-                ", service=" + service +
+                ", services=" + services +
                 '}';
     }
 }

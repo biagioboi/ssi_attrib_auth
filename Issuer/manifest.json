@@ -37,6 +37,6 @@
   "browser_action": {
     "default_icon": "icons/logo_popup.png",
     "default_title": "Issuer",
-    "default_popup": "popup/connetti.html"
+    "default_popup": "popup/invitation.html"
   }
 }
