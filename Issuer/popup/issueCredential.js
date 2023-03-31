@@ -64,34 +64,42 @@ async function submitForm() {
     var addr = await browser.storage.local.get("addr");
     var myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json");
+    var schema = await browser.storage.local.get("schema")
 
+    let cred_def_id = (await browser.storage.local.get("cred_def_id")).cred_def_id;
+    let schema_id = (await browser.storage.local.get("schema")).schema;
     var raw = {
-        "proposalRequest": {
-            "comment": "I want this",
-            "credential_preview": {
-                "attributes": []
-            },
-            "filter": {
-                "dif": {},
-                "indy": {}
-            }
+        "comment": "I want this",
+        "credential_preview": {
+            "attributes": []
         },
-        "addr": addr.addr
-    }
+        "filter": {
+            "indy": {
+                "cred_def_id": cred_def_id,
+                "issuer_did": "",
+                "schema_id": schema_id,
+                "schema_issuer_did": "",
+                "schema_name": "",
+                "schema_version": ""
+            }
+        }
+    };
 
 
     var form = document.getElementById("form");
 
+
     for (var i = 0; i < form.length - 1; i++) {
-        //costruisco il json form[i].value
         var el = {
             "mime-type": "plain/text",
             "name": form[i].placeholder,
             "value": form[i].value
         };
         //console.log(el);
-        raw.proposalRequest.credential_preview.attributes.push(el);
+        raw.credential_preview.attributes.push(el);
     }
+
+    console.log("miadueo");
 
     var requestOptions = {
         method: 'POST',
@@ -99,7 +107,9 @@ async function submitForm() {
         body: JSON.stringify(raw),
         redirect: 'follow'
     };
-    console.log(raw.proposalRequest.credential_preview.attributes);
+
+    console.log(requestOptions.body);
+    console.log(raw.credential_preview.attributes);
 
     var formDiv = document.getElementById("form");
 
@@ -107,6 +117,7 @@ async function submitForm() {
     load.style.display = 'block';
     formDiv.style.setProperty("display", "none", "important");
 
+    console.log("testcds");
     fetch("http://localhost:8080/issueCredential", requestOptions)
         .then(response => {
             response.json();

@@ -9,16 +9,25 @@ public class ProposalRequest {
     private String connection_id;
     @JsonProperty
     private CredentialPreview credential_preview;
+
+    @JsonProperty
+    private boolean auto_issue;
+
+    @JsonProperty
+    private boolean auto_remove;
+
     @JsonProperty
     private Filter filter;
 
     public ProposalRequest() {
     }
 
-    public ProposalRequest(String comment, String connection_id, CredentialPreview credential_preview, Filter filter) {
+    public ProposalRequest(String comment, String connection_id, CredentialPreview credential_preview, boolean auto_issue, boolean auto_remove, Filter filter) {
         this.comment = comment;
         this.connection_id = connection_id;
         this.credential_preview = credential_preview;
+        this.auto_issue = auto_issue;
+        this.auto_remove = auto_remove;
         this.filter = filter;
     }
 
@@ -54,10 +63,28 @@ public class ProposalRequest {
         this.filter = filter;
     }
 
+    public boolean isAuto_issue() {
+        return auto_issue;
+    }
+
+    public void setAuto_issue(boolean auto_issue) {
+        this.auto_issue = auto_issue;
+    }
+
+    public boolean isAuto_remove() {
+        return auto_remove;
+    }
+
+    public void setAuto_remove(boolean auto_remove) {
+        this.auto_remove = auto_remove;
+    }
+
     @Override
     public String toString() {
         return "ProposalRequest{" +
                 "comment='" + comment + '\'' +
+                ", auto_issue='" + auto_issue + '\'' +
+                ", auto_remove='" + auto_remove + '\'' +
                 ", connection_id='" + connection_id + '\'' +
                 ", credentialPreview=" + credential_preview +
                 ", filter=" + filter +

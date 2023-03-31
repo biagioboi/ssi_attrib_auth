@@ -10,8 +10,7 @@ public class CredentialPreview {
     @JsonProperty(value = "@type")
     @SerializedName("@type")
     private String type;
-    @JsonProperty(value = "attributes")
-    @SerializedName("attributes")
+    @JsonProperty
     private ArrayList<AttributeRequest> attributes;
 
     public CredentialPreview() {

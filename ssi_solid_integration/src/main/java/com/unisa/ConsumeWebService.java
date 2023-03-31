@@ -51,6 +51,13 @@ public class ConsumeWebService {
         return connId;
     }
 
+    private String getPublicDid(String agent_endpoint) {
+        TemplateForPublicDidResponse did_response = restTemplate
+                .getForEntity(agent_endpoint + "/wallet/did/public", TemplateForPublicDidResponse.class)
+                .getBody();
+        return did_response.getResult().getDid();
+    }
+
     @RequestMapping("/invitation")
     @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
@@ -107,25 +114,30 @@ public class ConsumeWebService {
      * value of schema name and schema version from the Issuer plugin */
     @PostMapping("/createSchema")
     @ResponseStatus(HttpStatus.OK)
-    public CredentialDefinitionResonse createSchema(@RequestBody SchemaRequest schemaReq) {
+    public SchemaResponse createSchema(@RequestBody SchemaRequest schemaReq) {
         ArrayList<String> attributi = schemaReq.getAttributes();
 
 
-        SchemaRequest req = new SchemaRequest(attributi, "my-schema", "4.0");
+        SchemaRequest req = new SchemaRequest(attributi, "my-schema", "15.6");
         ResponseEntity<SchemaResponse> responseEntity = restTemplate.postForEntity(serverAgent
                 + "/schemas", req, SchemaResponse.class);
 
-        String schemaId = responseEntity.getBody().getSchema_id();
 
-        System.out.println(schemaId);
+        return responseEntity.getBody();
+    }
+
+    @PostMapping("/credentialDefinition")
+    @ResponseStatus(HttpStatus.OK)
+    public CredentialDefinitionResonse credentialDefinition(@RequestBody SchemaResponse schema_res) {
+        String schemaId = schema_res.getSchema_id();
 
         CredentialDefinitionRequest credReq = new CredentialDefinitionRequest(schemaId, "default");
 
-        CredentialDefinitionResonse CredentialDefinitionResonse = restTemplate.postForEntity(serverAgent
+        CredentialDefinitionResonse cred = restTemplate.postForEntity(serverAgent
                         + "/credential-definitions", credReq, CredentialDefinitionResonse.class)
                 .getBody();
-        System.out.println(req);
-        return CredentialDefinitionResonse;
+
+        return cred;
     }
 
     @RequestMapping("/schemas/usable")
@@ -244,14 +256,30 @@ public class ConsumeWebService {
         return restTemplate.postForEntity(userAgent
                 + "/issue-credential-2.0/records/" + bobCredExId + "/store", null, CredeExRecord.class);*/
 
-        ProposalRequest propReq = issueReq.getProposalRequest();
 
-        String connId = getConnectionId(userAgent);
-        propReq.setConnection_id(connId);
-        propReq.getCredential_preview().setType("issue-credential/2.0/credential-preview");
 
-        System.out.println(propReq);
-        return;
+        String connId = getConnectionId(serverAgent);
+        issueReq.setConnection_id(connId);
+        issueReq.getCredential_preview().setType("issue-credential/2.0/credential-preview");
+        issueReq.setAuto_issue(true);
+        issueReq.setAuto_remove(true);
+
+        // Create the indy filter
+        Indy i = issueReq.getFilter().getIndy();
+        // We need to fill the field reserved to indy filter in order to validate the credentials
+        // Cred def and Schema id are already defined into the request
+        String public_did_server = getPublicDid(serverAgent);
+        SchemaResponseForAttributes sel_schema = usableSchemaWithAttributes(new SchemaRequestForAttributes(i.getSchema_id()));
+        i.setissuer_did(public_did_server);
+        i.setSchema_issuer_did(public_did_server); // Valid only if the issuer of the schema is the same of the issuer of credentials, Since we're considering us as only issuer of the system it's ok
+        i.setSchema_name(sel_schema.getSchema().getName());
+        i.setSchema_version(sel_schema.getSchema().getVersion());
+
+        // Now it's possible to proceed with the request, since it is an automated flow, the request will directly arrive to the user agent
+       // restTemplate.postForEntity(userAgent
+         //       + "/issue-credential-2.0/send", issueReq, CredeExRecord.class)
+        System.out.println(issueReq);
+return null;
     }
 
     @RequestMapping("/retCredential")

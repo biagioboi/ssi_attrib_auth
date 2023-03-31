@@ -4,6 +4,8 @@ async function setItem() {
   console.log("OK");
 
   var schema = await browser.storage.local.get("schema");
+  console.log(schema);
+	console.log(await browser.storage.local.get("cred_def_id"));
   if(schema.schema === undefined){
   	window.location.href = 'schema.html';
   }else{
@@ -42,14 +44,12 @@ function getInvitation(){
 	  console.log(response);
   	if(!response.ok){
   		throw `error with status ${response.status}`;
-    }
-  })
-  .then(result => {
-  	console.log(result);
-  	let invitation = true;
-	browser.storage.local.set({invitation})
-  		.then(setItem, onError);
-  	
+    } else {
+
+		let invitation = true;
+		browser.storage.local.set({invitation})
+			.then(setItem, onError);
+	}
   })
   .catch(error => console.log('error', error));
 }
