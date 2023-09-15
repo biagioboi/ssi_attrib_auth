@@ -106,22 +106,23 @@ docker run -p 8000:8000 -p 11000:11000 bcgovimages/aries-cloudagent:py36-1.16-1_
 This will be our Issuer, namely Alice, able to emit VC for all the requesting Holder.
 Let's do a request for new VC from the new user Bob.
 
-First of all, we need to declare a new user, which will be able to connect to the Ledger.
+First of all, we need to declare a new user, which will be able to connect to the Ledger. 
+**Indy wallet is no more used, we changed to wallet-type askar**
 
 ```
-docker run -p 8001:8001 -p 11001:11001 bcgovimages/aries-cloudagent:py36-1.16-1_0.8.0 start \
+docker run -p 8001:8001 -p 11001:11001 bcgovimages/aries-cloudagent:py3.9-indy-1.16.0_0.10.0-rc0 start \
 --label Bob \
 -it http 0.0.0.0 8001 \
 -ot http --admin 0.0.0.0 11001 \
 --admin-insecure-mode \
 --auto-accept-invites \
 --auto-accept-requests \
---genesis-url http://host.docker.internal:9000/genesis \
---endpoint http://host.docker.internal:8001/ \
+--genesis-url http://192.168.2.1/genesis \
+--endpoint http://192.168.2.1:8001/ \
 --debug-connections \
 --auto-provision \
 --wallet-local-did \
---wallet-type indy \
+--wallet-type askar \
 --wallet-name Bob1 \
 --wallet-key secret
 ```
