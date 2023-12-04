@@ -84,21 +84,22 @@ The Trust Anchor that created this DID can not modify it anymore.
 This is one of the principles of Self Sovereign Identity (SSI).
 
 So, we create a new "Entity" Alice, able to create new Verifiable Credentials, to do so after we registered a Seed using the interface of Hyperledger Aries; it's possible to execute the command.
+MACHINE_IP:PORT must be changed according to your IP in the net.
 
 ```
-docker run -p 8000:8000 -p 11000:11000 bcgovimages/aries-cloudagent:py36-1.16-1_0.8.0 start \
+docker run -p 8000:8000 -p 11000:11000 bcgovimages/aries-cloudagent:py3.9-indy-1.16.0_0.10.0-rc0 start  \
 --label Alice \
 -it http 0.0.0.0 8000 \
 -ot http --admin 0.0.0.0 11000 \
 --admin-insecure-mode \
 --auto-accept-invites \
 --auto-accept-requests \
---genesis-url http://host.docker.internal:9000/genesis \
+--genesis-url http://<MACHINE_IP:PORT>/genesis \
 --seed Alice000000000000000000076744495 \
 --endpoint http://host.docker.internal:8000/ \
 --debug-connections \
 --auto-provision \
---wallet-type indy \
+--wallet-type askar \
 --wallet-name Alice1 \
 --wallet-key secret
 ```
@@ -117,8 +118,8 @@ docker run -p 8001:8001 -p 11001:11001 bcgovimages/aries-cloudagent:py3.9-indy-1
 --admin-insecure-mode \
 --auto-accept-invites \
 --auto-accept-requests \
---genesis-url http://192.168.2.1/genesis \
---endpoint http://192.168.2.1:8001/ \
+--genesis-url http://<MACHINE_IP:PORT>/genesis \
+--endpoint http://host.docker.internal:8001/ \
 --debug-connections \
 --auto-provision \
 --wallet-local-did \
