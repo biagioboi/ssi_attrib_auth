@@ -45,21 +45,38 @@ function submitForm() {
     load.style.display = 'block';
     form.style.setProperty("display", "none", "important");
     addBtn.style.setProperty("display", "none", "important");
-
+    console.log(requestOptions)
     fetch("http://localhost:8080/createSchema", requestOptions)
         .then(response => response.json())
         .then(result => {
             browser.storage.local.set({schema: result.schema_id})
+            let test = {
+                schema_id: result.schema_id,
+                schema: {
+                    ver: result.schema.ver,
+                    id: result.schema.id,
+                    name: result.schema.name,
+                    version: result.schema.version,
+                    attrNames: result.schema.attrNames
+                },
+                seqNo: result.seqNo
+            }
+            console.log(test)
             requestOptions = {
                 method: 'POST',
                 headers: myHeaders,
-                body: JSON.stringify(result),
+                body: JSON.stringify(test),
                 redirect: 'follow'
             };
+            console.log(requestOptions);
             return fetch("http://localhost:8080/credentialDefinition", requestOptions)
         })
-        .then(results => results.json())
+        .then(results => {
+            console.log(results);
+            return results.json();
+        })
         .then(resultss => {
+            console.log(resultss);
             browser.storage.local.set({cred_def_id: resultss.credential_definition_id}).then(setItem, onError);
             var attributes = raw.attributes;
             browser.storage.local.set({attributes}).then(setItem, onError);

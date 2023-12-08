@@ -118,6 +118,7 @@ docker run -p 8001:8001 -p 11001:11001 bcgovimages/aries-cloudagent:py3.9-indy-1
 --admin-insecure-mode \
 --auto-accept-invites \
 --auto-accept-requests \
+--auto-store-credential \
 --genesis-url http://<MACHINE_IP:PORT>/genesis \
 --endpoint http://host.docker.internal:8001/ \
 --debug-connections \

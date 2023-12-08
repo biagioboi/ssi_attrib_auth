@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
@@ -61,7 +62,7 @@ public class ConsumeWebService {
     @RequestMapping("/invitation")
     @PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @ResponseStatus(HttpStatus.OK)
-    public InvitationDetails invitationTango(@RequestBody Addr addr) throws InterruptedException {
+    public InvitationResponse invitationTango(@RequestBody Addr addr) throws InterruptedException {
         userAgent="http://"+addr.getAddr();
 
 
@@ -86,7 +87,7 @@ public class ConsumeWebService {
                         + "/out-of-band/receive-invitation", decodedInvitation, InvitationDetails.class);
 
 
-        return responseEntity1.getBody();
+        return responseEntity.getBody();
 
         /* Removed since it's been enabled the auto-connection, no need to exchange the did manually, it's done in automatic flavor */
         /*
@@ -118,7 +119,7 @@ public class ConsumeWebService {
         ArrayList<String> attributi = schemaReq.getAttributes();
 
 
-        SchemaRequest req = new SchemaRequest(attributi, "my-schema", "15.6");
+        SchemaRequest req = new SchemaRequest(attributi, "my-schema_2", "15.23");
         ResponseEntity<SchemaResponse> responseEntity = restTemplate.postForEntity(serverAgent
                 + "/schemas", req, SchemaResponse.class);
 
@@ -163,12 +164,15 @@ public class ConsumeWebService {
     }
 
     public String getCredExId(String url) {
-        CredExIdResponse credExIdResponse = restTemplate
-                .getForEntity(url + "/issue-credential-2.0/records", CredExIdResponse.class)
-                .getBody();
+        int tot = 0;
+        CredExIdResponse credExIdResponse = null;
+        while(tot == 0) {
+            credExIdResponse = restTemplate
+                    .getForEntity(url + "/issue-credential-2.0/records", CredExIdResponse.class)
+                    .getBody();
 
-
-        assert credExIdResponse != null;
+            tot = credExIdResponse.getResults().size();
+        }
         String credExId = credExIdResponse
                 .getResults()
                 .get(0).
@@ -181,7 +185,7 @@ public class ConsumeWebService {
 
     @PostMapping("/issueCredential")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<CredeExRecord> issueCredential(@RequestBody IssueRequest issueReq) throws InterruptedException {
+    public IssueResponse issueCredential(@RequestBody IssueRequest issueReq) throws InterruptedException {
 
         /** Approach based on manual releasing of credentials, changed with automated flow **/
         /*
@@ -276,10 +280,16 @@ public class ConsumeWebService {
         i.setSchema_version(sel_schema.getSchema().getVersion());
 
         // Now it's possible to proceed with the request, since it is an automated flow, the request will directly arrive to the user agent
-       // restTemplate.postForEntity(userAgent
-         //       + "/issue-credential-2.0/send", issueReq, CredeExRecord.class)
-        System.out.println(issueReq);
-return null;
+        ResponseEntity<IssueResponse> response = restTemplate.postForEntity(serverAgent
+                   + "/issue-credential-2.0/send", issueReq, IssueResponse.class);
+        IssueResponse issueres = null;
+        if (response.getStatusCode() == HttpStatus.OK) {
+            issueres = response.getBody();
+            System.out.println(issueres.toString());
+            String bobCredExID = getCredExId(userAgent);
+            restTemplate.postForEntity(userAgent + "/issue-credential-2.0/records/" + bobCredExID + "/send-request", null, CredeExRecord.class).getBody();
+        }
+        return issueres;
     }
 
     @RequestMapping("/retCredential")
