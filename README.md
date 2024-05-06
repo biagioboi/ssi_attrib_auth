@@ -137,8 +137,45 @@ It's possible to execute ACA-Py directly on local machine, but we discourage thi
 More information are available https://github.com/hyperledger/aries-cloudagent-python
 
 ## Installazione estensione Firefox
-1. Scaricare questa repo come Zip file
-2. Estrarre il file 
-3. Dalla pagina about:debugging cliccare su Questo firefox dal menu a sinistra
-4. Cliccare componente aggiuntivo
-5. Caricare il file manifest.json in estensione/manifest.json
+1. Aprire Firefox
+2. Dalla pagina `about:debugging` cliccare su `Questo firefox` dal menu a sinistra
+3. Cliccare componente aggiuntivo
+4. Dalla cartella Issuer caricare il file `manifest.json` in `estensione/manifest.json`
+5. Effettuare la stessa procedura per la cartella Holder
+
+Once you installed both extension, you are ready to work with our server. So start-up the server in the following step.
+## Server Start-Up
+1. Aprire la cartella `ssi_attrib_auth` come progetto Maven
+2. Importare le dipendenze del file `pom.xml`
+3. Se apri il progetto con IntelliJ non dovrebbe darti problemi, altrimenti configura lo start-up come da immagine
+<img src="./screen/screen_config.png" alt="IntelliJ Configuration" style="width: 50%"/>
+4. Avvia il server
+
+
+# Avvio Demo
+Dopo aver avviato l'istanza di BoB è necessario che i due agent Alice e BoB si mettano in comunizazione. Per farlo bisogna effettuare una richiesta GET all'url localhost:8080/invitation; questo è possibile farlo attraverso l'estensione firefox.
+
+<img src="./screen/screen1.jpg" />
+
+
+Dopodichè è necessario creare uno schema effettuando una richiesta POST all' url localhost:8080/createSchema sempre utilizzando l'estensione e aggiungendo i campi che si desidera.
+
+<img src="./screen/screen2.jpg"/>
+
+<img src="./screen/screen3.jpg"/>
+
+In conclusione è possiblie ottenere le credenziali effettuando una richiesta POST a localhost:8080/ utilizzando l'estensione e issueCredencial.
+
+<img src="./screen/screen6.jpg"/>
+
+<img src="./screen/screen5.jpg"/>
+
+Per autenticarsi al sistema con le credenziali ottenute da una pagina di login d'esempio è possibile accedere tramite SSI
+
+<img src="./screen/screen9.png"/>
+
+Aprendo nuovamente l'estensione è possibile accettare. In risposta si ottiene un token JWT da utilizzare per accedere alle risorse web.
+
+<img src="./screen/screen11.jpg"/>
+
+<img src="./screen/screen10.jpg"/>
