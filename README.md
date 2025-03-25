@@ -1,4 +1,21 @@
-# Self-Sorveign Identity (SSI) attribute based authentication
+# Self-Sovereign Identity (SSI) Attribute-Based Web Authentication
+
+For citing this work please use:
+
+Boi B., De Santis M. and Esposito C. (2023). Self-Sovereign Identity (SSI) Attribute-Based Web Authentication. In Proceedings of the 20th International Conference on Security and Cryptography - Volume 1: SECRYPT; ISBN 978-989-758-666-8, SciTePress, pages 758-763. DOI: 10.5220/0012121400003555
+```bib
+@conference{secrypt23,
+author={Biagio Boi and Marco De Santis and Christian Esposito},
+title={Self-Sovereign Identity (SSI) Attribute-Based Web Authentication},
+booktitle={Proceedings of the 20th International Conference on Security and Cryptography - Volume 1: SECRYPT},
+year={2023},
+pages={758-763},
+publisher={SciTePress},
+organization={INSTICC},
+doi={10.5220/0012121400003555},
+isbn={978-989-758-666-8},
+}
+```
 
 This repo contains the implementation of a SSI-compliant web server plus two firefox
 extensions that simulate possible interactions with the server.
